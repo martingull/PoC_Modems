@@ -3,6 +3,7 @@ import os
 
 DATA_ROOT = './Pictures KPN'
 
+
 def video_to_images():
 
     # check if destination folder present

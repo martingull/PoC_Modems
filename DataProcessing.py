@@ -6,6 +6,9 @@ import av
 VIDEO_ROOT = './Pictures KPN'
 DATA_ROOT = './raw_pictures'
 
+# TODO: video and data root | and 'rawpictures'
+# TODO: sample every 5th or so image
+# TODO: v2image should write to a folder using resize pics in title. to avoid retraining etc.
 
 class PreProcessor:
 

@@ -60,7 +60,6 @@ if mode == 'TRAIN':
     model.save('./model.tflearn')
 elif mode == 'TEST':
     model.load('./model.tflearn')
-    model.predict()
+    # model.predict()
 
     # Perform post-analysis
-    

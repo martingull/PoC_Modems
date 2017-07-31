@@ -9,6 +9,7 @@ DATA_ROOT = './raw_pictures'
 # TODO: video and data root | and 'rawpictures'
 # TODO: sample every 5th or so image
 # TODO: v2image should write to a folder using resize pics in title. to avoid retraining etc.
+# TODO: Add data augmentation
 
 class PreProcessor:
 
@@ -26,12 +27,13 @@ class PreProcessor:
         folders = [folder for folder in os.listdir(VIDEO_ROOT)]
         for folder in folders:
             files = [file for file in os.listdir(VIDEO_ROOT + '/' + folder)]
+
+            # check if destination folder present
+            if not os.path.exists('./raw_pictures/' + folder):
+                os.makedirs('./raw_pictures/' + folder)
+
             for file in files:
                 container = av.open(VIDEO_ROOT + '/' + folder + '/' + file)
-
-                # check if destination folder present
-                if not os.path.exists('./raw_pictures/' + folder):
-                    os.makedirs('./raw_pictures/' + folder)
 
                 # resize and save frame to disk
                 for frame in container.decode(video=0):

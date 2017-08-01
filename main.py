@@ -10,10 +10,11 @@ from NetworkGenerator import NetworkGenerator
 mode = 'TRAIN'  # Set to 'TRAIN' or 'TEST'
 pic_size = (227, 227)
 
-dataset = PreProcessor(resize_pics=pic_size)
+dataset = PreProcessor()
 # X, Y = oxflower17.load_data(one_hot=True, resize_pics=(227, 227))
 # dataset.video_to_images()
-X, Y = dataset.load_data()
+dataset.augment_data()
+X, Y = dataset.load_data('./processed_data')
 n_labels = Y.shape[1]
 
 # Get Architecture

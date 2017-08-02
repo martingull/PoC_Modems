@@ -1,25 +1,33 @@
 import os
 from PIL import Image
-import tflearn
 import numpy as np
 import av
-import tensorflow as tf
+from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
 
 # TODO: video and data root | and 'rawpictures'
-# TODO: sample every 5th or so image
 # TODO: v2image should write to a folder using resize pics in title. to avoid retraining etc.
-# TODO: Add data augmentation
 
 class PreProcessor:
 
-    def __init__(self):
-        self.size_pics = (256, 256)
+    def __init__(self, size_pics=(256, 256)):
+        self.size_pics = size_pics
 
     def create_data(self):
         self.video_to_images(size_pics=self.size_pics)
+        self.augment_data()
 
-    def augment_data(self, image_path='./raw_pictures', augment_path='./processed_data'):
+    def augment_data(self, image_path='./raw_pictures', augment_path='./processed_data', batch_size=10):
+
+        # Define data augmentor
+        dataaug = ImageDataGenerator(
+            rotation_range=40,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
+            shear_range=0.2,
+            zoom_range=0.2,
+            horizontal_flip=True,
+            fill_mode='nearest')
 
         # check if destination folder present
         if not os.path.exists(augment_path):
@@ -33,11 +41,20 @@ class PreProcessor:
             if not os.path.exists(augment_path + '/' + folder):
                 os.makedirs(augment_path + '/' + folder)
 
+            # for each raw image
             for file in files:
-                tf.image.decode_jpeg(file)
+                img = load_img(file)
+                x = img_to_array(img)
+                x = np.expand_dims(x, axis=0)  # dim: (1, height, width, rbg)
+                i = 0
+                for batch in dataaug.flow(x, batch_size=1, save_to_dir=augment_path + '/' + folder, save_prefix='aug',
+                                          save_format='jpeg'):
+                    i += 1
+                    if i > batch_size:
+                        break
 
     @staticmethod
-    def video_to_images(image_path='./raw_pictures', video_path='./Pictures KPN', size_pics=(256, 256)):
+    def video_to_images(image_path='./raw_pictures', video_path='./Pictures KPN', size_pics=(256, 256), frame_spacing=3):
 
         # check if destination folder present
         if not os.path.exists(image_path):
@@ -55,17 +72,21 @@ class PreProcessor:
                 container = av.open(video_path + '/' + folder + '/' + file)
 
                 # resize and save frame to disk
+                c = 0
                 for frame in container.decode(video=0):
-                    frame = frame.reformat(width=size_pics[0], height=size_pics[1])
-                    img = frame.to_image()
-                    head = ''.join(file.split('.')[:1])  # remove everything after punctuation
-                    img.save(image_path + '/' + folder + '/' + head + 'frame-%04d.jpg' % frame.index)
+                    if c % frame_spacing == 0:
+                        frame = frame.reformat(width=size_pics[0], height=size_pics[1])
+                        img = frame.to_image()
+                        head = ''.join(file.split('.')[:1])  # remove everything after punctuation
+                        img.save(image_path + '/' + folder + '/' + head + 'frame-%04d.jpg' % frame.index)
+                    c += 1
 
     @staticmethod
-    def load_image(infile_name):
-        img = Image.open(infile_name)
-        img.load()
-        return np.asarray(img, dtype="int32")
+    def load_image(file):
+        img = load_img(file)
+        x = img_to_array(img)
+        return x
+        # return np.expand_dims(x, axis=0)  # dim: (1, height, width, rbg)
 
     @staticmethod
     def count_instances(root_dirname):
@@ -90,8 +111,8 @@ class PreProcessor:
             files = [f.path for f in os.scandir(folder)]
             for file in files:
                 # Parse images
-                img = PreProcessor.load_image(file)
-                data[i_image, :, :, :] = img
+                x = PreProcessor.load_image(file)
+                data[i_image, :, :, :] = x
                 target[i_image, i_folder] = 1.0
                 i_image += 1
 

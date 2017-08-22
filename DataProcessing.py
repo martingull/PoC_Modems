@@ -13,21 +13,23 @@ class PreProcessor:
     def __init__(self, size_pics=(256, 256)):
         self.size_pics = size_pics
 
+#  this function is not yet used anywhere        
     def create_data(self):
         self.video_to_images(size_pics=self.size_pics)
         self.augment_data()
 
     def augment_data(self, image_path='./raw_pictures', augment_path='./processed_data', batch_size=10):
-
+        
         # Define data augmentor
         dataaug = ImageDataGenerator(
-            rotation_range=40,
-            width_shift_range=0.2,
-            height_shift_range=0.2,
-            shear_range=0.2,
-            zoom_range=0.2,
-            horizontal_flip=True,
-            fill_mode='nearest')
+            rotation_range=180,
+            width_shift_range=0.05,
+            height_shift_range=0.05,
+            shear_range=0.05,
+            zoom_range=0.05,
+            horizontal_flip=False,
+            vertical_flip=False,
+            fill_mode="nearest")
 
         # check if destination folder present
         if not os.path.exists(augment_path):
@@ -54,7 +56,7 @@ class PreProcessor:
                         break
 
     @staticmethod
-    def video_to_images(image_path='./raw_pictures', video_path='./Pictures KPN', size_pics=(256, 256), frame_spacing=3):
+    def video_to_images(image_path='./raw_pictures', video_path='./trimmed_videos', size_pics=(256, 256), frame_spacing=24):
 
         # check if destination folder present
         if not os.path.exists(image_path):
@@ -80,7 +82,7 @@ class PreProcessor:
                         head = ''.join(file.split('.')[:1])  # remove everything after punctuation
                         img.save(image_path + '/' + folder + '/' + head + 'frame-%04d.jpg' % frame.index)
                     c += 1
-
+                    
     @staticmethod
     def load_image(file):
         img = load_img(file)
